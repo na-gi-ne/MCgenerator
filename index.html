@@ -1,42 +1,94 @@
-
- 
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MCgenerator</title>
-  <link rel="stylesheet" type="text/css" href="stylesheet.css">
-  <script src="https://code.createjs.com/easeljs-0.7.1.min.js"></script>
-  <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
-</head>
-<body>
-<!-- 入力エリア部分 -->
-		<dl class="table">
-			<dt>タイトル</dt>
-			<dd><input type="text" name="txt01" id="txt01" placeholder="営業さん" />100人に聞きました</dd>
-			<dt>質問</dt>
-			<dd><input type="text" name="txt02" id="txt02" placeholder="できますか？" /></dd>
-			<dt>凡例：100%</dt>
-			<dd><input type="text" name="txt03" id="txt03" placeholder="できる" /></dd>
-			<dt>凡例：0%</dt>
-			<dd><input type="text" name="txt04" id="txt04" placeholder="できない" /></dd>
-		</dl>
-		<div class="btn">
-			<button id="update">画像生成</button>
-		</div>
- 
- 
-<!-- 出力部分 -->
-	<div class="module">
-		<h2>結果</h2>
-		<!-- width,heightは必須 -->
-		<canvas id="result" width="600" height="400"></canvas>
-		<div class="btn">
-			<form action="img.php" method="post" id="saveform">
-				<button id="save">画像として保存</button>
-			</form>
-		</div>
-	</div>
-</body>
+  <head>
+    <title>Cropper</title>
+    <html lang="ja">
+    <meta charset="utf-8"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.4.3/cropper.min.css" rel="stylesheet" type="text/css" media="all"/>
+    <!-- JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.4.3/cropper.min.js"></script>
+  </head>
+
+  <body>
+        <div class="container">
+            <h1>Crop on canvas with Cropper</h1>
+            <h3>Image</h3>
+
+      <div class="upload"><input type="file" name="file" id="file"></div>
+
+            <div id="img-container">
+                <img id="image" src="" width="980">
+            </div>
+            <h3>Canvas</h3>
+            <div>
+                <canvas id="canvas" class="img-canvas" width="980" height="580"></canvas>
+            </div>
+        </div>
+
+    <a href="" id="download_link">ダウンロード</a>
+
+        <script>
+         var _cropper;
+         function start() {
+           var image = document.getElementById('image');
+              _cropper = new Cropper(image);
+          }
+        function loadLocalImage(e) {
+          // ファイル情報を取得
+          var fileData = e.target.files[0];
+          // FileReaderオブジェクトを使ってファイル読み込み
+          var reader = new FileReader();
+          reader.onload = function() {
+          // ブラウザ上に画像を表示する
+          image = document.getElementById('image');
+          image.src = reader.result;
+          var canvas = document.getElementById('canvas');
+          if (image.complete) {
+            start.call(image);
+          } else {
+            image.onload = start;
+          }
+        }
+        // ファイル読み込みを実行
+        reader.readAsDataURL(fileData);
+      }
+
+      var file = document.getElementById('file');
+      file.addEventListener('change', this.loadLocalImage, false);
+      var imageContainer = document.getElementById('img-container');
+
+      var imageContainer = document.getElementById('img-container');
+      imageContainer.addEventListener('click', function() {
+        //getDataは用意されたオプション
+        var cropperData = _cropper.getData();
+
+        var data = {
+          x: Math.round(cropperData.x),
+          y: Math.round(cropperData.y),
+          width: Math.round(cropperData.width),
+          height: Math.round(cropperData.height),
+          vectorX: 1,
+          vectorY: 1
+        };
+
+        var image = document.getElementById('image');
+        var canvas = document.getElementById('canvas');
+        canvas.getContext('2d').drawImage(
+          image,
+          data['x'],
+          data['y'],
+          data['width'],
+          data['height'],
+          0,0,//切り出されるCanvas内での座標指定
+          data['vectorX'] * 980, //切り出される画像の横幅
+          data['vectorY'] * 580 //切り出される画像の縦幅
+        );
+        var canvasElement = document.getElementById('canvas');
+        var dlLink = document.getElementById('download_link');
+        dlLink.href = canvasElement.toDataURL();
+        dlLink.download = 'sample.jpg';
+      });
+        </script>
+    </body>
 </html>
